@@ -10,6 +10,7 @@ function Header() {
           <LinkContainer to='/'>
             <Navbar.Brand>AvShop</Navbar.Brand>
           </LinkContainer>
+
           <Navbar.Toggle aria-controls='basic-navbar-nav' />
           <Navbar.Collapse id='basic-navbar-nav'>
             <Nav className='mr-auto'>
