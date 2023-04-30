@@ -83,7 +83,7 @@ def getUsers(request):
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def getUserById(request, pk):
-    users = User.objects.get(id=pk)
+    user = User.objects.get(id=pk)
     serializer = UserSerializer(user, many=False)
     return Response(serializer.data)
 
