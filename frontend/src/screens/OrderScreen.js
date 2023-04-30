@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Row, Col, ListGroup, Image, Card } from 'react-bootstrap';
+import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { PayPalButton } from 'react-paypal-button-v2';
 import Message from '../components/Message';
@@ -18,7 +18,6 @@ function OrderScreen() {
   const { loading: loadingPay, success: successPay } = orderPay;
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const [sdkReady, setSdkReady] = useState(false);
 
@@ -51,7 +50,7 @@ function OrderScreen() {
         setSdkReady(true);
       }
     }
-  }, [dispatch, order, id]);
+  }, [dispatch, order, id, successPay]);
 
   const successPaymentHandler = (paymentResult) => {
     dispatch(payOrder(id, paymentResult));

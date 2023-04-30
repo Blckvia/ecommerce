@@ -11,7 +11,6 @@ import {
   Card,
 } from 'react-bootstrap';
 import Message from '../components/Message';
-import { Alert } from 'react-bootstrap';
 import { addToCart, removeFromCart } from '../actions/cartActions';
 
 function CartScreen() {
