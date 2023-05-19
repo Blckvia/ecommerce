@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from base.models import Product
-from base.serializers import ProductSerializer  
+from base.serializers import ProductSerializer
 
 
 @api_view(['GET'])
@@ -19,7 +19,7 @@ def getProducts(request):
 @api_view(['GET'])
 def getProduct(request, pk):
     product = Product.objects.get(_id=pk)
-    serializer = ProductSerializer(product, many=False)  
+    serializer = ProductSerializer(product, many=False)
     return Response(serializer.data)
 
 
@@ -37,8 +37,7 @@ def createProduct(request):
         description='',
     )
 
-    
-    serializer = ProductSerializer(product, many=False)  
+    serializer = ProductSerializer(product, many=False)
     return Response(serializer.data)
 
 
@@ -57,7 +56,7 @@ def updateProduct(request, pk):
 
     product.save()
 
-    serializer = ProductSerializer(product, many=False)  
+    serializer = ProductSerializer(product, many=False)
     return Response(serializer.data)
 
 
@@ -66,5 +65,17 @@ def updateProduct(request, pk):
 def deleteProduct(request, pk):
     product = Product.objects.get(_id=pk)
     product.delete()
-    serializer = ProductSerializer(product, many=False)  
     return Response('Product Deleted')
+
+
+@api_view(['POST'])
+def uploadImage(request):
+    data = request.data
+
+    product_id = data['product_id']
+    product = Product.objects.get(_id=product_id)
+
+    product.image = request.FILES.get('image')
+    product.save()
+
+    return Response('Image was uploaded')
