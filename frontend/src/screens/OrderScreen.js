@@ -1,21 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, ListGroup, Image, Card } from 'react-bootstrap';
-import { Link, useParams } from 'react-router-dom';
+import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { PayPalButton } from 'react-paypal-button-v2';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
-import { getOrderDetails, payOrder } from '../actions/orderActions';
-import { ORDER_PAY_RESET } from '../constants/orderConstants';
+import {
+  getOrderDetails,
+  payOrder,
+  deliverOrder,
+} from '../actions/orderActions';
+import {
+  ORDER_PAY_RESET,
+  ORDER_DELIVER_RESET,
+} from '../constants/orderConstants';
 
 function OrderScreen() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const orderDetails = useSelector((state) => state.orderDetails);
   const { order, error, loading } = orderDetails;
 
   const orderPay = useSelector((state) => state.orderPay);
   const { loading: loadingPay, success: successPay } = orderPay;
+
+  const orderDeliver = useSelector((state) => state.orderDeliver);
+  const { loading: loadingDeliver, success: successDeliver } = orderDeliver;
+
+  const userLogin = useSelector((state) => state.userLogin);
+  const { userInfo } = userLogin;
 
   const dispatch = useDispatch();
 
@@ -40,8 +54,14 @@ function OrderScreen() {
   };
 
   useEffect(() => {
-    if (!order || successPay || order._id !== Number(id)) {
+    if (!userInfo) {
+      navigate('/login');
+    }
+
+    if (!order || successPay || order._id !== Number(id) || successDeliver) {
       dispatch({ type: ORDER_PAY_RESET });
+      dispatch({ type: ORDER_DELIVER_RESET });
+
       dispatch(getOrderDetails(id));
     } else if (!order.isPaid) {
       if (!window.paypal) {
@@ -50,10 +70,14 @@ function OrderScreen() {
         setSdkReady(true);
       }
     }
-  }, [dispatch, order, id, successPay]);
+  }, [dispatch, order, id, successPay, successDeliver]);
 
   const successPaymentHandler = (paymentResult) => {
     dispatch(payOrder(id, paymentResult));
+  };
+
+  const deliverHandler = () => {
+    dispatch(deliverOrder(order));
   };
 
   return loading ? (
@@ -62,15 +86,14 @@ function OrderScreen() {
     <Message variant='danger'>{error}</Message>
   ) : (
     <div>
-      <h1>Order: {order._id}</h1>
+      <h1>Order: {order.Id}</h1>
       <Row>
         <Col md={8}>
           <ListGroup variant='flush'>
             <ListGroup.Item>
               <h2>Shipping</h2>
               <p>
-                <strong>Name: </strong>
-                {order.user.name}
+                <strong>Name: </strong> {order.user.name}
               </p>
               <p>
                 <strong>Email: </strong>
@@ -83,9 +106,10 @@ function OrderScreen() {
                 {order.shippingAddress.postalCode},{'  '}
                 {order.shippingAddress.country}
               </p>
-              {order.isDelivired ? (
+
+              {order.isDelivered ? (
                 <Message variant='success'>
-                  Delivered on {order.deliviredAt}
+                  Delivered on {order.deliveredAt}
                 </Message>
               ) : (
                 <Message variant='warning'>Not Delivered</Message>
@@ -101,7 +125,7 @@ function OrderScreen() {
               {order.isPaid ? (
                 <Message variant='success'>Paid on {order.paidAt}</Message>
               ) : (
-                <Message variant='warning'>Not Paid{order.paidAt}</Message>
+                <Message variant='warning'>Not Paid</Message>
               )}
             </ListGroup.Item>
 
@@ -180,6 +204,7 @@ function OrderScreen() {
               {!order.isPaid && (
                 <ListGroup.Item>
                   {loadingPay && <Loader />}
+
                   {!sdkReady ? (
                     <Loader />
                   ) : (
@@ -191,6 +216,21 @@ function OrderScreen() {
                 </ListGroup.Item>
               )}
             </ListGroup>
+            {loadingDeliver && <Loader />}
+            {userInfo &&
+              userInfo.isAdmin &&
+              order.isPaid &&
+              !order.isDelivered && (
+                <ListGroup.Item>
+                  <Button
+                    type='button'
+                    className='btn btn-block'
+                    onClick={deliverHandler}
+                  >
+                    Mark As Delivered
+                  </Button>
+                </ListGroup.Item>
+              )}
           </Card>
         </Col>
       </Row>
