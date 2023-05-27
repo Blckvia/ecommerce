@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap';
 import { Table, Button, Row, Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
 import Loader from '../components/Loader';
 import Message from '../components/Message';
+import Paginate from '../components/Paginate';
 import {
   listProducts,
   deleteProduct,
@@ -13,12 +15,14 @@ import {
 import { PRODUCT_CREATE_RESET } from '../constants/productConstants';
 
 function ProductListScreen() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { id } = useParams();
+
+  const dispatch = useDispatch();
+
+  let keyword = useLocation().search; //>>> '?keyword=abc'
 
   const productList = useSelector((state) => state.productList);
-  const { loading, error, products } = productList;
+  const { loading, error, products, page, pages } = productList;
 
   const productDelete = useSelector((state) => state.productDelete);
   const {
@@ -48,15 +52,16 @@ function ProductListScreen() {
     if (successCreate) {
       navigate(`/admin/product/${createdProduct._id}/edit`);
     } else {
-      dispatch(listProducts());
+      dispatch(listProducts(keyword));
     }
   }, [
     dispatch,
-    userInfo,
     navigate,
+    userInfo,
     successDelete,
     successCreate,
     createdProduct,
+    keyword,
   ]);
 
   const deleteHandler = (id) => {
@@ -75,8 +80,7 @@ function ProductListScreen() {
         <Col>
           <h1>Products</h1>
         </Col>
-
-        <Col className='text-right'>
+        <Col className='text-end'>
           <Button className='my-3' onClick={createProductHandler}>
             <i className='fas fa-plus'></i> Create Product
           </Button>
@@ -92,7 +96,7 @@ function ProductListScreen() {
       {loading ? (
         <Loader />
       ) : error ? (
-        <Message variant='danger'>{error}</Message>
+        <Message variant='danger'>{error}</Message> //Hoặc: <Message variant='danger' children={error}></Message>
       ) : (
         <div>
           <Table striped bordered hover responsive className='table-sm'>
@@ -111,11 +115,17 @@ function ProductListScreen() {
               {products.map((product) => (
                 <tr key={product._id}>
                   <td>{product._id}</td>
-                  <td>{product.name}</td>
-                  <td>${product.price}</td>
+                  <td>
+                    <Link
+                      to={`/product/${product._id}`}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      {product.name}
+                    </Link>
+                  </td>
+                  <td>{product.price}</td>
                   <td>{product.category}</td>
                   <td>{product.brand}</td>
-
                   <td>
                     <LinkContainer to={`/admin/product/${product._id}/edit`}>
                       <Button variant='light' className='btn-sm'>
@@ -135,7 +145,8 @@ function ProductListScreen() {
               ))}
             </tbody>
           </Table>
-          {/* <Paginate pages={pages} page={page} isAdmin={true} /> */}
+
+          <Paginate page={page} pages={pages} isAdmin={true} />
         </div>
       )}
     </div>
