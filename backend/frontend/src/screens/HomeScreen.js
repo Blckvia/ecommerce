@@ -9,36 +9,17 @@ import { useDispatch, useSelector } from 'react-redux';
 import ProductCarousel from '../components/ProductCarousel';
 import { listProducts } from '../actions/productActions';
 
-//import axios from 'axios';
-//import products from '../products';
-
-//const useQuery = () => {
-//  return new URLSearchParams(useLocation().search);
-//}
-
 function HomeScreen() {
-  //const [products, setProducts] = useState([])
   const dispatch = useDispatch();
 
-  //let keyword = useQuery().get("keyword")
-
-  let keyword = useLocation().search; //>>> '?keyword=abc'
-  //console.log(keyword)
+  let keyword = useLocation().search;
 
   const productList = useSelector((state) => state.productList);
   const { error, loading, products, page, pages } = productList;
 
   useEffect(() => {
-    // async function fetchProducts() {
-    //   const {data} = await axios.get('/api/products/')
-    //   setProducts(data)
-    // }
-    // fetchProducts()
-
     dispatch(listProducts(keyword));
   }, [dispatch, keyword]);
-
-  //const products = []
 
   return (
     <div>
@@ -47,7 +28,7 @@ function HomeScreen() {
       {loading ? (
         <Loader />
       ) : error ? (
-        <Message variant='danger'>{error}</Message> //Hoặc: <Message variant='danger' children={error}></Message>
+        <Message variant='danger'>{error}</Message>
       ) : (
         <div>
           <Row>
